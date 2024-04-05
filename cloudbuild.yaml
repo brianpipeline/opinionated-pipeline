@@ -1,6 +1,6 @@
 steps:
   - name: "us-central1-docker.pkg.dev/cloud-build-pipeline-396819/cloud-build-helper-docker/cloud-build-helper-docker:0.1"
-    id: "Run pipeline deployer"
+    id: "Create replyTo topic"
     entrypoint: "bash"
     args:
       - "-eEuo"
@@ -8,6 +8,41 @@ steps:
       - "-c"
       - |-
         #!/bin/bash
-        
+        source create-replyTo-topic.sh
+        createReplyToTopic "$PROJECT_ID" "$_SHORT_BUILD_ID"
+    env:
+      - "PROJECT_ID=$PROJECT_ID"
+
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "Publish pubsub message"
+    entrypoint: "bash"
+    args:
+      - "-eEuo"
+      - "pipefail"
+      - "-c"
+      - |-
+        gcloud pubsub topics publish projects/$PROJECT_ID/topics/cloudbuild-deploy \
+        --message='{"git": { "clone_url": "$_REPO_TO_CLONE", "name": "$_REPO_NAME" }, "reply_topic": "$_SHORT_BUILD_ID"}'
+    env:
+      - "PROJECT_ID=$PROJECT_ID"
+
+  - name: "us-central1-docker.pkg.dev/cloud-build-pipeline-396819/cloud-build-helper-docker/cloud-build-helper-docker:0.1"
+    id: "await replyTo topic"
+    entrypoint: "bash"
+    args:
+      - "-eEuo"
+      - "pipefail"
+      - "-c"
+      - |-
+        #!/bin/bash
+        source await-reply.sh
+        awaitReply "$_SHORT_BUILD_ID" "opinionated_pipeline" "600"
+    env:
+      - "PROJECT_ID=$PROJECT_ID"
+
+substitutions:
+  _REPO_NAME: $(body.repository.name)
+  _REPO_TO_CLONE: $(body.repository.clone_url)
+  _SHORT_BUILD_ID: ${BUILD_ID:0:8}
 options:
   substitutionOption: "ALLOW_LOOSE"
