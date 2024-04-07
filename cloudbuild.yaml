@@ -9,7 +9,7 @@ steps:
       - |-
         #!/bin/bash
         source create-replyTo-topic.sh
-        createReplyToTopic "$PROJECT_ID" "$_SHORT_BUILD_ID"
+        createReplyToTopic "$PROJECT_ID" "topic_$_SHORT_BUILD_ID"
     env:
       - "PROJECT_ID=$PROJECT_ID"
 
@@ -22,7 +22,7 @@ steps:
       - "-c"
       - |-
         gcloud pubsub topics publish projects/$PROJECT_ID/topics/cloudbuild-deploy \
-        --message='{"git": { "clone_url": "$_REPO_TO_CLONE", "name": "$_REPO_NAME" }, "reply_topic": "projects/$PROJECT_ID/topics/$_SHORT_BUILD_ID"}'
+        --message='{"git": { "clone_url": "$_REPO_TO_CLONE", "name": "$_REPO_NAME" }, "reply_topic": "projects/$PROJECT_ID/topics/topic_$_SHORT_BUILD_ID"}'
     env:
       - "PROJECT_ID=$PROJECT_ID"
 
@@ -36,7 +36,7 @@ steps:
       - |-
         #!/bin/bash
         source await-reply.sh
-        awaitReply "$_SHORT_BUILD_ID" "opinionated_pipeline" "600"
+        awaitReply "topic_$_SHORT_BUILD_ID" "opinionated_pipeline" "600"
     env:
       - "PROJECT_ID=$PROJECT_ID"
 
