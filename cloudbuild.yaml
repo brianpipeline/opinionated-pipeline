@@ -23,7 +23,7 @@ steps:
       - |-
         #!/bin/bash
         source send-message.sh
-        sendMessage "projects/$PROJECT_ID/topics/cloudbuild-deploy" "{\"git\": { \"clone_url\": \"$_REPO_TO_CLONE\", \"name\": \"$_REPO_NAME\" }, \"reply_topic\": \"projects/$PROJECT_ID/topics/topic_$_SHORT_BUILD_ID\"}"
+        sendMessage "projects/$PROJECT_ID/topics/cloudbuild-deploy" "{\"git\": { \"clone_url\": \"$_GIT_CLONE_URL\", \"name\": \"$_GIT_REPOSITORY_NAME\", \"ref\":\"$_GIT_REF\", \"head_sha\": \"$_GIT_HEAD_SHA\" }, \"reply_topic\": \"projects/$PROJECT_ID/topics/topic_$_SHORT_BUILD_ID\"}"
     env:
       - "PROJECT_ID=$PROJECT_ID"
 
@@ -42,8 +42,10 @@ steps:
       - "PROJECT_ID=$PROJECT_ID"
 
 substitutions:
-  _REPO_NAME: $(body.repository.name)
-  _REPO_TO_CLONE: $(body.repository.clone_url)
+  _GIT_REPOSITORY_NAME: $(body.repository.name)
+  _GIT_CLONE_URL: $(body.repository.clone_url)
+  _GIT_REF: $(body.ref)
+  _GIT_HEAD_SHA: $(body.head_commit.id)
   _SHORT_BUILD_ID: ${BUILD_ID:0:8}
 options:
   substitutionOption: "ALLOW_LOOSE"
