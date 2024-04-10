@@ -22,6 +22,7 @@ steps:
       - "-c"
       - |-
         #!/bin/bash
+        source send-message.sh
         sendMessage "projects/$PROJECT_ID/topics/cloudbuild-deploy" "{\"git\": { \"clone_url\": \"$_REPO_TO_CLONE\", \"name\": \"$_REPO_NAME\" }, \"reply_topic\": \"projects/$PROJECT_ID/topics/topic_$_SHORT_BUILD_ID\"}"
     env:
       - "PROJECT_ID=$PROJECT_ID"
