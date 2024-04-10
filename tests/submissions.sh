@@ -17,3 +17,4 @@ if ! gcloud pubsub subscriptions describe "subscription_$buildId"; then
     echo "Subscription was not deleted"
     exit 1
 fi
+
