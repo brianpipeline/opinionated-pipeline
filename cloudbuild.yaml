@@ -1,5 +1,17 @@
 steps:
   - name: "us-central1-docker.pkg.dev/cloud-build-pipeline-396819/cloud-build-helper-docker/cloud-build-helper-docker:0.1"
+    id: "Clone repo"
+    entrypoint: "bash"
+    args:
+      - "-eEuo"
+      - "pipefail"
+      - "-c"
+      - |-
+        #!/bin/bash
+        source git-clone-and-checkout.sh
+        cloneAndCheckoutBranch "$_GIT_CLONE_URL" "$_GIT_REPOSITORY_NAME" "$_GIT_REF" "$_GIT_HEAD_SHA"
+
+  - name: "us-central1-docker.pkg.dev/cloud-build-pipeline-396819/cloud-build-helper-docker/cloud-build-helper-docker:0.1"
     id: "Create replyTo topic"
     entrypoint: "bash"
     args:
@@ -14,16 +26,17 @@ steps:
       - "PROJECT_ID=$PROJECT_ID"
 
   - name: "us-central1-docker.pkg.dev/cloud-build-pipeline-396819/cloud-build-helper-docker/cloud-build-helper-docker:0.1"
-    id: "Publish pubsub message"
+    id: "Trigger downstream pipeline"
     entrypoint: "bash"
+    dir: "${_GIT_REPOSITORY_NAME}"
     args:
       - "-eEuo"
       - "pipefail"
       - "-c"
       - |-
         #!/bin/bash
-        source send-message.sh
-        sendMessage "projects/$PROJECT_ID/topics/cloudbuild-deploy" "{\"git\": { \"clone_url\": \"$_GIT_CLONE_URL\", \"name\": \"$_GIT_REPOSITORY_NAME\", \"ref\":\"$_GIT_REF\", \"head_sha\": \"$_GIT_HEAD_SHA\" }, \"reply_topic\": \"projects/$PROJECT_ID/topics/topic_$_SHORT_BUILD_ID\"}"
+        source trigger-pipelines.sh
+        triggerPipelines "$_GIT_CLONE_URL" "$_GIT_REPOSITORY_NAME" "$_GIT_REF" "$_GIT_HEAD_SHA" "$_SHORT_BUILD_ID" "$PROJECT_ID"
     env:
       - "PROJECT_ID=$PROJECT_ID"
 
