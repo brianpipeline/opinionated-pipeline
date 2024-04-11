@@ -8,6 +8,7 @@ steps:
       - "-c"
       - |-
         #!/bin/bash
+        source git-clone-and-checkout.sh
         cloneAndCheckoutBranch "$_GIT_CLONE_URL" "$_GIT_REPOSITORY_NAME" "$_GIT_REF" "$_GIT_HEAD_SHA"
 
   - name: "us-central1-docker.pkg.dev/cloud-build-pipeline-396819/cloud-build-helper-docker/cloud-build-helper-docker:latest"
@@ -19,6 +20,7 @@ steps:
       - "-c"
       - |-
         #!/bin/bash
+        source create-replyTo-topic.sh
         createReplyToTopic "$PROJECT_ID" "topic_$_SHORT_BUILD_ID"
     env:
       - "PROJECT_ID=$PROJECT_ID"
@@ -33,6 +35,7 @@ steps:
       - "-c"
       - |-
         #!/bin/bash
+        source trigger-pipelines.sh
         triggerPipelines "$_GIT_CLONE_URL" "$_GIT_REPOSITORY_NAME" "$_GIT_REF" "$_GIT_HEAD_SHA" "$_SHORT_BUILD_ID" "$PROJECT_ID"
     env:
       - "PROJECT_ID=$PROJECT_ID"
@@ -46,6 +49,7 @@ steps:
       - "-c"
       - |-
         #!/bin/bash
+        source await-reply.sh
         awaitReply "topic_$_SHORT_BUILD_ID" "subscription_$_SHORT_BUILD_ID" "600"
     env:
       - "PROJECT_ID=$PROJECT_ID"
