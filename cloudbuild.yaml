@@ -17,10 +17,10 @@ steps:
     args:
       - "-c"
       - |
-        export OWNER="brianpipeline"
-        export REPO="$_GIT_REPOSITORY_NAME"
-        export COMMIT_SHA="$_GIT_HEAD_SHA"
-        export CHECK_NAME="CloudBuild Check"
+        OWNER="brianpipeline"
+        REPO="$_GIT_REPOSITORY_NAME"
+        COMMIT_SHA="$_GIT_HEAD_SHA"
+        CHECK_NAME="CloudBuild Check"
 
         curl -X POST \
         -H "Accept: application/vnd.github.antiope-preview+json" \
